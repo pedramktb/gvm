@@ -1,0 +1,33 @@
+version: '3'
+
+tasks:
+  install:
+    cmds:
+      - go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+      - go mod download
+
+  generate:
+    cmds:
+      - go generate ./...
+
+  lint:
+    deps: [ generate ]
+    cmds:
+      - golangci-lint run
+
+  test:
+    deps: [ generate ]
+    cmds:
+      - go test ./...
+
+  build:
+    cmds:
+      - env GOOS=linux GOARCH=amd64 go build -o build/gvm
+      - env GOOS=linux GOARCH=arm64 go build -o build/gvm
+    sources:
+      - cmd/*
+      - pkg/*
+      - internal/*
+      - go.mod
+    generates:
+      - build
