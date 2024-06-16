@@ -36,10 +36,11 @@ func isVersionInstalled(version string) bool {
 	if version == "go" {
 		return true
 	}
-	cmd := exec.Command(version)
-	if err := cmd.Run(); err != nil {
+
+	if err := exec.Command(getGoVersionPath(version), "version").Run(); err != nil {
 		return false
 	}
+
 	return true
 }
 
@@ -58,7 +59,7 @@ func setVersion(bashrc, version string) {
 		return
 	}
 	commands := []string{
-		fmt.Sprintf(`echo "GOROOT=$(%s env GOROOT)" >> "%s"`, version, bashrc),
+		fmt.Sprintf(`echo "GOROOT=$(%s env GOROOT)" >> "%s"`, getGoVersionPath(version), bashrc),
 		fmt.Sprintf(`echo "PATH=\$GOROOT/bin:\$PATH" >> "%s"`, bashrc),
 		fmt.Sprintf(`echo "alias go='%s'" >> "%s"`, version, bashrc),
 	}
@@ -72,5 +73,14 @@ func execCommands(commands []string) {
 			fmt.Printf("error executing command %s: %s\n", command, err.Error())
 			return
 		}
+	}
+}
+
+func getGoVersionPath(version string) string {
+	goRoot := os.Getenv("GOROOT")
+	if goRoot != "" {
+		return goRoot + "/bin/" + version
+	} else {
+		return os.Getenv("HOME") + "/go/bin/" + version
 	}
 }
